@@ -1,0 +1,70 @@
+# Check if Node.js is installed
+$nodeVersion = node --version
+if (-not $?) {
+    Write-Host "Node.js is not installed. Please install Node.js first from https://nodejs.org/"
+    exit 1
+}
+
+# Create new Next.js project
+Write-Host "Creating new Next.js project with Tailwind CSS..."
+npx create-next-app@latest notes-system --typescript --tailwind --app --use-npm
+Set-Location notes-system
+
+# Install required dependencies
+Write-Host "Installing dependencies..."
+npm install @radix-ui/react-scroll-area
+
+# Initialize shadcn/ui
+Write-Host "Initializing shadcn/ui..."
+npx shadcn-ui@latest init -y
+
+# Add required components
+Write-Host "Adding shadcn/ui components..."
+npx shadcn-ui@latest add card
+npx shadcn-ui@latest add scroll-area
+
+# Create necessary directories
+Write-Host "Creating project structure..."
+New-Item -ItemType Directory -Path "app/components" -Force
+New-Item -ItemType Directory -Path "src/notes" -Force
+
+# Download the NoteSystem component
+Write-Host "Creating NoteSystem component..."
+$componentUrl = "YOUR_RAW_GITHUB_URL_FOR_NOTESYSTEM_COMPONENT"
+$webClient = New-Object System.Net.WebClient
+$webClient.DownloadFile($componentUrl, "app/components/NoteSystem.tsx")
+
+# Create example note
+$exampleNote = @"
+# Example Note
+Welcome to your note system!
+
+## Getting Started
+- Hover over notes to preview
+- Click to view full content
+- Use markdown formatting
+
+## Features
+1. Markdown support
+2. Hover previews
+3. Clean interface
+"@
+
+Set-Content -Path "src/notes/example.md" -Value $exampleNote
+
+# Update page.tsx
+$pageContent = @"
+import NoteSystem from '@/components/NoteSystem';
+
+export default function Home() {
+  return (
+    <main>
+      <NoteSystem />
+    </main>
+  );
+}
+"@
+
+Set-Content -Path "app/page.tsx" -Value $pageContent
+
+Write-Host "Installation complete! Run 'npm run dev' to start the development server."
